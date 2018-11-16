@@ -1,0 +1,55 @@
+---
+ apiVersion: apps/v1
+ kind: Deployment
+ metadata:
+   name: lidarr-deployment
+   labels:
+     app: lidarr
+ spec:
+   replicas: 1
+   selector:
+      matchLabels:
+        app: lidarr
+   template:
+     metadata:
+       labels:
+         app: lidarr
+
+     spec:
+      containers:
+         - name: lidarr
+           image: linuxserver/lidarr
+           imagePullPolicy: Always
+           resources:
+             limits:
+               cpu: "120m"
+             requests:
+               cpu: "120m"
+           ports:
+             - containerPort: 7878
+           volumeMounts:
+             - mountPath: /config
+               name: lidarr-volume
+             - mountPath: /downloads
+               name: lidarr-volume
+             - mountPath: /music
+               name: lidarr-volume
+      
+      volumes:
+        - name: lidarr-volume
+          persistentVolumeClaim:
+           claimName: lidarr-volume-claim
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: lidarr-service
+spec:
+  selector:
+    app: lidarr
+  ports:
+  - protocol: TCP
+    port: 8686
+    targetPort: 8686
+  type: NodePort
